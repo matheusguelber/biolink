@@ -314,6 +314,30 @@ export class DashboardController {
       this.renderLivePreview();
       this.updateUserWidget(stateManager.getState().profile);
     });
+
+    // Subscribe to Cloud Sync status changes
+    const pill = document.getElementById('cloudSyncStatusPill');
+    const pillText = document.getElementById('cloudSyncStatusText');
+    stateManager.onStatusChange((status, message) => {
+      if (!pill || !pillText) return;
+      pill.classList.remove('syncing', 'synced', 'error', 'offline');
+
+      if (status === 'syncing') {
+        pill.classList.add('syncing');
+        pillText.textContent = message || 'Salvando na nuvem...';
+      } else if (status === 'synced') {
+        pill.classList.add('synced');
+        pillText.textContent = message || 'Sincronizado na Nuvem';
+      } else if (status === 'error') {
+        pill.classList.add('error');
+        pillText.textContent = message || 'Erro ao sincronizar';
+      } else if (status === 'offline') {
+        pill.classList.add('offline');
+        pillText.textContent = message || 'Modo Local';
+      } else {
+        pillText.textContent = message || 'Firebase Conectado';
+      }
+    });
   }
 
   bindInput(elementId, callback) {

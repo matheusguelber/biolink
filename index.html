@@ -129,9 +129,15 @@
             </svg>
             Personalize seu Perfil
           </h2>
-          <button class="btn btn-secondary btn-sm btn-view-profile">
-            Abrir Perfil Completo &nearr;
-          </button>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="cloudSyncStatusPill" class="cloud-status-pill" title="Status da sincronização em nuvem com Firebase">
+              <span class="cloud-status-dot"></span>
+              <span id="cloudSyncStatusText">Firebase Conectado</span>
+            </div>
+            <button class="btn btn-secondary btn-sm btn-view-profile">
+              Abrir Perfil Completo &nearr;
+            </button>
+          </div>
         </div>
 
         <!-- Dashboard Navigation Tabs -->

@@ -1,11 +1,12 @@
-# 🚀 Math &bull; Slat.cc / Feds.lol BioLink Platform
+# 🚀 Math &bull; Slat.cc / Feds.lol BioLink Platform (com Firebase Cloud Sync)
 
-Plataforma completa de Link-in-Bio personalizada inspirada no **slat.cc** e **feds.lol**, com suporte a mais de 200 molduras animadas oficiais do Discord, efeitos 3D tilt, visualizador de áudio, insígnias/badges oficiais e painel de controle protegido por senha.
+Plataforma completa de Link-in-Bio personalizada inspirada no **slat.cc** e **feds.lol**, com suporte a mais de 200 molduras animadas oficiais do Discord, efeitos 3D tilt, visualizador de áudio, insígnias/badges oficiais, **persistência em nuvem com Firebase Firestore** e painel de controle protegido por senha.
 
 ---
 
 ## ✨ Funcionalidades
 
+- **🔥 Firebase Firestore Cloud Sync**: Todas as alterações feitas no Dashboard são salvas na nuvem em tempo real e sincronizadas em qualquer dispositivo, computador ou celular!
 - **🎭 +200 Molduras Oficiais do Discord**: Kitsune, Phoenix, Valorant, Arcane (Vi, Jinx, Hexcore), Street Fighter, Palworld, SpongeBob, Lofi Girl, Space, etc.
 - **🎨 Customização Total de Cores e Vidro**: Fundo do cartão unificado (topo e base), slider de opacidade e efeito blur (*frosted glass*).
 - **🅰️ Tipografia Avançada**: Fontes customizadas (Inter, Cinzel Gothic, JetBrains Mono, Montserrat, Outfit).
@@ -18,56 +19,56 @@ Plataforma completa de Link-in-Bio personalizada inspirada no **slat.cc** e **fe
 
 ---
 
-## 🐧 Como Hospedar no seu Servidor Ubuntu (Passo a Passo)
+## 🚀 Como Rodar o Servidor (Node.js + Firebase)
 
-### Opção 1: Usando Nginx (Recomendado - Ultra Rápido)
+### 1. Instalar as dependências:
+```bash
+npm install
+```
 
-1. **Clone o repositório no seu servidor**:
-   ```bash
-   sudo mkdir -p /var/www/biolink
-   cd /var/www/biolink
-   sudo git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git .
-   ```
-
-2. **Copie a configuração do Nginx**:
-   ```bash
-   sudo cp nginx.conf /etc/nginx/sites-available/biolink
-   sudo ln -s /etc/nginx/sites-available/biolink /etc/nginx/sites-enabled/
-   ```
-
-3. **Teste e reinicie o Nginx**:
-   ```bash
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-4. **(Opcional) Instale certificado SSL HTTPS grátis com Certbot**:
-   ```bash
-   sudo apt install certbot python3-certbot-nginx -y
-   sudo certbot --nginx -d seudominio.com -d www.seudominio.com
-   ```
+### 2. Iniciar o servidor:
+```bash
+npm start
+```
+O servidor iniciará em `http://localhost:3000` conectado ao Firebase Firestore (`biolink-f7521`).
 
 ---
 
-### Opção 2: Usando Docker (1 Comando)
+## 🐧 Como Hospedar no Ubuntu Server com Nginx e PM2
 
-Se você usa Docker no Ubuntu:
+### 1. Clonar e Instalar:
 ```bash
-docker run -d -p 80:80 -v $(pwd):/usr/share/nginx/html --name biolink-math nginx:alpine
+sudo mkdir -p /var/www/biolink
+cd /var/www/biolink
+sudo git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git .
+npm install
+```
+
+### 2. Rodar com PM2 em Segundo Plano:
+```bash
+sudo npm install -g pm2
+pm2 start server.js --name "biolink"
+pm2 save
+pm2 startup
+```
+
+### 3. Configurar o Nginx:
+```bash
+sudo cp nginx.conf /etc/nginx/sites-available/biolink
+sudo ln -s /etc/nginx/sites-available/biolink /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 4. (Opcional) Certificado SSL HTTPS Grátis:
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d seudominio.com -d www.seudominio.com
 ```
 
 ---
 
-### Opção 3: Usando Python / PM2 em Segundo Plano
-
-```bash
-# Rodando direto na porta 80 ou 3000
-python3 -m http.server 3000
-```
-
----
-
-## 🔐 Senha do Painel
+## 🔐 Acesso e Senha do Painel
 
 - **Rota do Perfil Público**: `https://seudominio.com/` ou `https://seudominio.com/#math`
 - **Rota do Dashboard**: `https://seudominio.com/#dashboard`

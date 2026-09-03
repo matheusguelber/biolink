@@ -1,0 +1,69 @@
+{
+  "profile": {
+    "username": "math",
+    "displayName": "Math",
+    "bio": "EH ISSO AI",
+    "location": "BRASIL",
+    "avatarUrl": "https://i.pinimg.com/736x/39/3f/6c/393f6ca4c64750a673ecb94264a36786.jpg",
+    "avatarShape": "circle",
+    "avatarDecoration": "deco-santa_cat_ears",
+    "customDecoUrl": "",
+    "bannerUrl": "",
+    "bgType": "media",
+    "bgMediaUrl": "https://cdn.xoa.me/uploads/bbeadda3-43ab-4942-8af4-fcf7424ae2a1.gif",
+    "bgMediaType": "image",
+    "bgColor": "#070709",
+    "bgTitle": "THE END",
+    "cursorUrl": "",
+    "views": 132
+  },
+  "appearance": {
+    "layout": "floating-avatar",
+    "cardStyle": "outlined",
+    "cardBgColor": "#12131a",
+    "cardOpacity": 0.75,
+    "cardBlur": 24,
+    "cardBorderColor": "",
+    "themeColor": "#ef4444",
+    "nameColor": "#ffffff",
+    "textColor": "#ffffff",
+    "nameFont": "Inter",
+    "textFont": "Cinzel",
+    "nameEffect": "glow",
+    "bioEffect": "none",
+    "pageOverlay": "retro",
+    "cursorTrail": "none",
+    "bgEffect": "none",
+    "animateViews": true,
+    "tiltingCard": true,
+    "glowingIcons": true,
+    "audioVisualizer": true,
+    "glowColor": "#6366f1"
+  },
+  "links": [
+    {
+      "id": "link_1",
+      "platform": "instagram",
+      "title": "Instagram",
+      "url": "https://instagram.com/mathguelber",
+      "customIcon": "",
+      "active": true
+    },
+    {
+      "id": "link_3",
+      "platform": "steam",
+      "title": "Steam",
+      "url": "https://steamcommunity.com/id/dlnalina",
+      "customIcon": "",
+      "active": true
+    }
+  ],
+  "audio": {
+    "enabled": true,
+    "autoplayOnEnter": true,
+    "title": "MATH",
+    "artist": "Math",
+    "coverArt": "https://cdn.xoa.me/uploads/809ee90a-aa38-4fec-9f2f-e89ae0385077.gif",
+    "audioUrl": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"
+  }
+}
