@@ -22,6 +22,13 @@ class App {
     this.initRouting();
     this.initEventListeners();
     this.initClickSparks();
+
+    // Re-render public profile whenever remote data arrives from Firebase
+    stateManager.subscribe((state) => {
+      if (this.viewPublicProfile && this.viewPublicProfile.style.display !== 'none') {
+        profileRenderer.render(state, this.publicContainer, false);
+      }
+    });
   }
 
   initRouting() {

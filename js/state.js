@@ -157,6 +157,11 @@ class StateManager {
           this.applyRemoteData(result.data);
           this.setCloudStatus('synced', 'Sincronizado com Firebase Cloud');
           return;
+        } else if (localStorage.getItem(STORAGE_KEY)) {
+          // Firebase is brand new/empty, initialize it with current client configuration
+          console.log('Firebase vazio. Enviando configuração inicial local...');
+          this.syncToServer();
+          return;
         }
       }
 

@@ -285,6 +285,27 @@ export class DashboardController {
       });
     }
 
+    // Manual Save to Cloud button
+    const btnSaveToCloud = document.getElementById('btnSaveToCloud');
+    if (btnSaveToCloud) {
+      btnSaveToCloud.addEventListener('click', async () => {
+        btnSaveToCloud.disabled = true;
+        btnSaveToCloud.innerHTML = `<span>⏳ Salvando...</span>`;
+        await stateManager.syncToServer();
+        setTimeout(() => {
+          btnSaveToCloud.disabled = false;
+          btnSaveToCloud.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Salvar na Nuvem
+          `;
+        }, 1200);
+      });
+    }
+
     // Export / Import
     const exportBtn = document.getElementById('exportJsonBtn');
     if (exportBtn) exportBtn.addEventListener('click', () => stateManager.exportJSON());
