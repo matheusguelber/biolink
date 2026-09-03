@@ -236,6 +236,7 @@ app.get('*', async (req, res) => {
           .replace(/<meta property="og:title" content=".*?" \/>/i, `<meta property="og:title" content="${title}" />`)
           .replace(/<meta property="og:description" content=".*?" \/>/i, `<meta property="og:description" content="${desc}" />`)
           .replace(/<meta property="og:image" content=".*?" \/>/i, `<meta property="og:image" content="${img}" />`)
+          .replace(/<meta property="twitter:image" content=".*?" \/>/i, `<meta property="twitter:image" content="${img}" />`)
           .replace(/<meta name="theme-color" content=".*?" \/>/i, `<meta name="theme-color" content="${color}" />`);
       }
 
