@@ -58,6 +58,17 @@ class ProfileRenderer {
     containerElement.style.setProperty('--text-color', appearance.textColor || '#ffffff');
     containerElement.style.setProperty('--card-bg-solid', cardSolidColorRgba);
 
+    // Update Page Head Meta dynamically if public view
+    if (!isPreview) {
+      document.title = `${profile.displayName || 'Math'} • BioLink`;
+      const ogImg = document.querySelector('meta[property="og:image"]');
+      if (ogImg) ogImg.setAttribute('content', profile.avatarUrl || profile.bgMediaUrl || '');
+      const twImg = document.querySelector('meta[property="twitter:image"]');
+      if (twImg) twImg.setAttribute('content', profile.avatarUrl || profile.bgMediaUrl || '');
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) themeMeta.setAttribute('content', appearance.themeColor || '#ef4444');
+    }
+
     const cardCustomStyle = `
       background: ${cardSolidColorRgba} !important;
       backdrop-filter: blur(${cardBlur}px) !important;

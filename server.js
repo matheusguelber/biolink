@@ -215,12 +215,9 @@ app.use(express.static(__dirname, {
   }
 }));
 
-// [FEATURE 4]: Discord / WhatsApp / Social Crawler OpenGraph Dynamic Injection
+// [FEATURE 4]: 100% Dynamic OpenGraph & Meta Injection directly from Firebase
 app.get('*', async (req, res) => {
-  const userAgent = (req.headers['user-agent'] || '').toLowerCase();
-  const isCrawler = /bot|crawl|spider|facebookexternalhit|whatsapp|discordbot|slackbot|twitterbot|telegrambot/i.test(userAgent);
-
-  if (isCrawler && fs.existsSync(INDEX_HTML_PATH)) {
+  if (fs.existsSync(INDEX_HTML_PATH)) {
     try {
       const profileData = await getProfileFromSource();
       let html = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
@@ -228,7 +225,7 @@ app.get('*', async (req, res) => {
       if (profileData && profileData.profile) {
         const title = `${profileData.profile.displayName || 'Math'} &bull; BioLink`;
         const desc = profileData.profile.bio || 'Visite meu perfil oficial, links e redes sociais.';
-        const img = profileData.profile.avatarUrl || 'https://servidormatheus.com/favicon.ico';
+        const img = profileData.profile.avatarUrl || profileData.profile.bgMediaUrl || '';
         const color = profileData.appearance?.themeColor || '#ef4444';
 
         html = html
@@ -238,11 +235,11 @@ app.get('*', async (req, res) => {
           .replace(/<meta property="og:image" content=".*?" \/>/i, `<meta property="og:image" content="${img}" />`)
           .replace(/<meta property="twitter:image" content=".*?" \/>/i, `<meta property="twitter:image" content="${img}" />`)
           .replace(/<meta name="theme-color" content=".*?" \/>/i, `<meta name="theme-color" content="${color}" />`);
-      }
 
-      return res.send(html);
+        return res.send(html);
+      }
     } catch (e) {
-      console.error('Erro ao injetar meta tags para bot:', e);
+      console.error('Erro ao injetar meta tags dinâmicas:', e);
     }
   }
 
