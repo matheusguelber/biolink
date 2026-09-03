@@ -222,19 +222,22 @@ class StateManager {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          this.setCloudStatus('synced', data.savedToFirebase ? 'Salvo no Firebase Cloud ✅' : 'Salvo no Servidor ✅');
+          const msg = data.savedToFirebase ? 'Salvo no Firebase Cloud ✅' : 'Salvo no Servidor ✅';
+          this.setCloudStatus('synced', msg);
           setTimeout(() => {
             if (this.cloudStatus === 'synced') {
               this.setCloudStatus('ready', 'Sincronizado');
             }
           }, 4000);
-          return;
+          return { success: true, message: msg };
         }
       }
       this.setCloudStatus('error', 'Erro ao salvar no servidor');
+      return { success: false, message: 'Erro na resposta do servidor' };
     } catch (e) {
       console.warn('Falha na requisição para salvar no servidor:', e.message);
       this.setCloudStatus('offline', 'Salvo localmente (offline)');
+      return { success: false, message: e.message };
     }
   }
 
