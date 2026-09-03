@@ -98,6 +98,57 @@ export class DashboardController {
     this.updateUserWidget(profile);
   }
 
+  collectFormDataToState() {
+    const getVal = (id, fallback = '') => {
+      const el = document.getElementById(id);
+      return (el && el.value !== undefined) ? el.value : fallback;
+    };
+    const getCheck = (id, fallback = false) => {
+      const el = document.getElementById(id);
+      return el ? el.checked : fallback;
+    };
+
+    const state = stateManager.getState();
+
+    // Profile Fields
+    state.profile.displayName = getVal('inputDisplayName', state.profile.displayName);
+    state.profile.bio = getVal('inputBio', state.profile.bio);
+    state.profile.location = getVal('inputLocation', state.profile.location);
+    state.profile.avatarUrl = getVal('inputAvatarUrl', state.profile.avatarUrl);
+    state.profile.bannerUrl = getVal('inputBannerUrl', state.profile.bannerUrl);
+    state.profile.bgMediaUrl = getVal('inputBgMediaUrl', state.profile.bgMediaUrl);
+    state.profile.bgTitle = getVal('inputBgTitle', state.profile.bgTitle);
+    state.profile.bgColor = getVal('inputBgColor', state.profile.bgColor);
+    state.profile.cursorUrl = getVal('inputCursorUrl', state.profile.cursorUrl);
+
+    // Appearance Colors & Sliders
+    state.appearance.themeColor = getVal('themeColorInput', state.appearance.themeColor);
+    state.appearance.cardBgColor = getVal('cardBgColorInput', state.appearance.cardBgColor);
+    state.appearance.nameColor = getVal('nameColorInput', state.appearance.nameColor);
+    state.appearance.textColor = getVal('textColorInput', state.appearance.textColor);
+    state.appearance.nameFont = getVal('selectNameFont', state.appearance.nameFont);
+    state.appearance.textFont = getVal('selectTextFont', state.appearance.textFont);
+
+    const rangeOpacity = document.getElementById('rangeCardOpacity');
+    if (rangeOpacity) state.appearance.cardOpacity = parseInt(rangeOpacity.value, 10) / 100;
+
+    const rangeBlur = document.getElementById('rangeCardBlur');
+    if (rangeBlur) state.appearance.cardBlur = parseInt(rangeBlur.value, 10);
+
+    state.appearance.animateViews = getCheck('switchAnimateViews', state.appearance.animateViews);
+    state.appearance.tiltingCard = getCheck('switchTiltingCard', state.appearance.tiltingCard);
+    state.appearance.glowingIcons = getCheck('switchGlowingIcons', state.appearance.glowingIcons);
+    state.appearance.audioVisualizer = getCheck('switchAudioVisualizer', state.appearance.audioVisualizer);
+
+    // Audio Fields
+    state.audio.title = getVal('inputAudioTitle', state.audio.title);
+    state.audio.artist = getVal('inputAudioArtist', state.audio.artist);
+    state.audio.audioUrl = getVal('inputAudioUrl', state.audio.audioUrl);
+    state.audio.coverArt = getVal('inputAudioCover', state.audio.coverArt);
+
+    stateManager.saveState();
+  }
+
   setInputValue(elementId, value) {
     const el = document.getElementById(elementId);
     if (el && value !== undefined) el.value = value;
@@ -291,6 +342,12 @@ export class DashboardController {
       btnSaveToCloud.addEventListener('click', async () => {
         btnSaveToCloud.disabled = true;
         btnSaveToCloud.innerHTML = `<span>⏳ Salvando na nuvem...</span>`;
+        
+        // Collect all currently typed/selected form values into state
+        this.collectFormDataToState();
+        this.renderLivePreview();
+        this.updateUserWidget(stateManager.getState().profile);
+
         const result = await stateManager.syncToServer();
         btnSaveToCloud.disabled = false;
         btnSaveToCloud.innerHTML = `
