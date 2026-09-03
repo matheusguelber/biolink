@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioLink Studio &bull; Perfil Personalizado</title>
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/decorations.css" />
+  <link rel="stylesheet" href="css/profile.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+
+<body>
+
+  <!-- ========================================== -->
+  <!-- 1. DASHBOARD VIEW (Studio de Edição)       -->
+  <!-- ========================================== -->
+  <div id="viewDashboard" class="dashboard-container">
+
+    <!-- Sidebar Navigation -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">S</div>
+        <span class="sidebar-logo-text">slat.cc <span
+            style="font-size: 0.75rem; color: var(--accent-primary);">studio</span></span>
+      </div>
+
+      <div class="sidebar-section-title">Customize</div>
+      <ul class="sidebar-menu">
+        <li><a class="sidebar-item active" data-tab="profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Profile
+          </a></li>
+        <li><a class="sidebar-item" data-tab="appearance">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+            </svg>
+            Appearance
+          </a></li>
+        <li><a class="sidebar-item" data-tab="links">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            Links
+          </a></li>
+        <li><a class="sidebar-item" data-tab="badges">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7.5"></path>
+              <path d="M14 14.66V17c0 .55.45 1 1 1h1.5"></path>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+            </svg>
+            Badges
+          </a></li>
+        <li><a class="sidebar-item" data-tab="tracks">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+            Tracks & Audio
+          </a></li>
+      </ul>
+
+      <div class="sidebar-section-title">Manage</div>
+      <ul class="sidebar-menu">
+        <li><a class="sidebar-item" id="exportJsonBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Backup Config (JSON)
+          </a></li>
+        <li>
+          <label class="sidebar-item" style="cursor: pointer;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Import JSON
+            <input type="file" id="importJsonInput" accept=".json" style="display: none;" />
+          </label>
+        </li>
+      </ul>
+
+      <div class="sidebar-bottom">
+        <button class="btn btn-primary btn-view-profile" style="width: 100%;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          View Live Profile
+        </button>
+
+        <div class="user-profile-widget">
+          <div class="user-profile-info">
+            <img id="widgetUserAvatar" src="" alt="Avatar" class="user-profile-avatar" />
+            <div>
+              <div id="widgetUserName" class="user-profile-name">Math</div>
+              <div id="widgetUserUrl" class="user-profile-url">slat.cc/math</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <div class="dashboard-main">
+
+      <!-- Left Configuration Form Column -->
+      <section class="dashboard-content">
+        <div class="dashboard-header">
+          <h2 class="dashboard-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Personalize seu Perfil
+          </h2>
+          <button class="btn btn-secondary btn-sm btn-view-profile">
+            Abrir Perfil Completo &nearr;
+          </button>
+        </div>
+
+        <!-- Dashboard Navigation Tabs -->
+        <div class="dashboard-tabs">
+          <button class="tab-btn active" data-tab="profile">Profile</button>
+          <button class="tab-btn" data-tab="appearance">Appearance</button>
+          <button class="tab-btn" data-tab="links">Links</button>
+          <button class="tab-btn" data-tab="badges">Badges</button>
+          <button class="tab-btn" data-tab="tracks">Tracks</button>
+        </div>
+
+        <!-- TAB 1: PROFILE -->
+        <div class="tab-panel active" id="tab-profile">
+
+          <!-- Avatar Section -->
+          <div class="form-section">
+            <div class="form-section-title">
+              <span>Avatar</span>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="inputAvatarUrl" class="form-input" placeholder="Cole o link da imagem..." />
+              <label class="btn btn-secondary btn-sm" style="white-space: nowrap; cursor: pointer;">
+                📁 Upload
+                <input type="file" id="fileAvatarInput" accept="image/*" style="display: none;" />
+              </label>
+            </div>
+
+            <div style="margin-top: 8px;">
+              <label class="form-label">Formato do Avatar</label>
+              <div class="shape-picker-group">
+                <button class="shape-btn" data-shape="square">Square</button>
+                <button class="shape-btn" data-shape="soft">Soft</button>
+                <button class="shape-btn" data-shape="rounded">Rounded</button>
+                <button class="shape-btn active" data-shape="circle">Circle</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 14px;">
+              <div class="form-label" style="margin-bottom: 6px;">Moldura do Avatar (Discord Animated)</div>
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" id="btnOpenDecoModal">
+                  ✨ Escolher Moldura (<span id="currentDecoName">Cosmic Water Splash</span>)
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btnRemoveDeco">
+                  Remover Moldura
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Background Section -->
+          <div class="form-section">
+            <div class="form-section-title">Background (Fundo da Página)</div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="inputBgMediaUrl" class="form-input"
+                placeholder="Link da imagem ou vídeo de fundo..." />
+              <label class="btn btn-secondary btn-sm" style="white-space: nowrap; cursor: pointer;">
+                📁 Upload
+                <input type="file" id="fileBgMediaInput" accept="image/*,video/*" style="display: none;" />
+              </label>
+            </div>
+
+            <div style="margin-top: 10px;">
+              <label class="form-label">Texto Gigante de Fundo (Aesthetic Background Title)</label>
+              <input type="text" id="inputBgTitle" class="form-input" placeholder="Ex: THE END" />
+            </div>
+
+            <div style="margin-top: 10px;">
+              <label class="form-label">Cor de Fundo Base</label>
+              <input type="color" id="inputBgColor" class="form-input" style="height: 40px; padding: 2px;"
+                value="#070709" />
+            </div>
+          </div>
+
+          <!-- Banner Section -->
+          <div class="form-section">
+            <div class="form-section-title">Banner do Cartão</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="inputBannerUrl" class="form-input" placeholder="Link da imagem do banner..." />
+              <label class="btn btn-secondary btn-sm" style="white-space: nowrap; cursor: pointer;">
+                📁 Upload
+                <input type="file" id="fileBannerInput" accept="image/*" style="display: none;" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Bio & Details -->
+          <div class="form-section">
+            <div class="form-section-title">Informações Pessoais</div>
+            <div>
+              <label class="form-label">Nome de Exibição</label>
+              <input type="text" id="inputDisplayName" class="form-input" placeholder="Seu Nome" />
+            </div>
+            <div>
+              <label class="form-label">Biografia / Subtítulo</label>
+              <textarea id="inputBio" class="form-textarea" placeholder="Sua bio marcante..."></textarea>
+            </div>
+            <div>
+              <label class="form-label">Localização</label>
+              <input type="text" id="inputLocation" class="form-input" placeholder="Ex: BRASIL" />
+            </div>
+            <div>
+              <label class="form-label">Cursor Customizado (URL opcional de .png / .cur)</label>
+              <input type="text" id="inputCursorUrl" class="form-input" placeholder="https://exemplo.com/cursor.png" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 2: APPEARANCE (Idêntico ao feds.lol) -->
+        <div class="tab-panel" id="tab-appearance">
+
+          <!-- Layout -->
+          <div class="form-section">
+            <div class="form-section-title">Layout do Perfil</div>
+            <div class="presets-grid">
+              <div class="preset-card layout-preset-card active" data-layout="floating-avatar">
+                <div class="preset-icon-mock">👤</div>
+                <span class="preset-label">Floating Avatar</span>
+              </div>
+              <div class="preset-card layout-preset-card" data-layout="stacked">
+                <div class="preset-icon-mock">💳</div>
+                <span class="preset-label">Stacked</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Style -->
+          <div class="form-section">
+            <div class="form-section-title">Estilo do Cartão de Perfil</div>
+            <div class="presets-grid">
+              <div class="preset-card style-preset-card active" data-style="frosted-soft">
+                <div class="preset-icon-mock">✨</div>
+                <span class="preset-label">Frosted Soft</span>
+              </div>
+              <div class="preset-card style-preset-card" data-style="classic">
+                <div class="preset-icon-mock">⬛</div>
+                <span class="preset-label">Classic Dark</span>
+              </div>
+              <div class="preset-card style-preset-card" data-style="frosted-square">
+                <div class="preset-icon-mock">🔲</div>
+                <span class="preset-label">Frosted Square</span>
+              </div>
+              <div class="preset-card style-preset-card" data-style="outlined">
+                <div class="preset-icon-mock">🟣</div>
+                <span class="preset-label">Outlined Glow</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colors & Fonts Grid (Idêntico ao screenshot) -->
+          <div class="appearance-grid-2">
+
+            <!-- Card: Colors -->
+            <div class="appearance-card">
+              <div class="form-section-title">
+                <span>🎨 Cores do Perfil &amp; Cartão</span>
+              </div>
+
+              <div class="color-pickers-row" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="color-picker-box">
+                  <label class="form-label">Theme</label>
+                  <div class="color-picker-btn" id="themeColorBtn" style="background-color: #ef4444;">
+                    ✏️
+                    <input type="color" id="themeColorInput" value="#ef4444" />
+                  </div>
+                </div>
+
+                <div class="color-picker-box">
+                  <label class="form-label">Card Background</label>
+                  <div class="color-picker-btn" id="cardBgColorBtn" style="background-color: #12131a;">
+                    ✏️
+                    <input type="color" id="cardBgColorInput" value="#12131a" />
+                  </div>
+                </div>
+
+                <div class="color-picker-box">
+                  <label class="form-label">Name</label>
+                  <div class="color-picker-btn" id="nameColorBtn" style="background-color: #ffffff;">
+                    ✏️
+                    <input type="color" id="nameColorInput" value="#ffffff" />
+                  </div>
+                </div>
+
+                <div class="color-picker-box">
+                  <label class="form-label">Text</label>
+                  <div class="color-picker-btn" id="textColorBtn" style="background-color: #ffffff;">
+                    ✏️
+                    <input type="color" id="textColorInput" value="#ffffff" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Glassmorphism Sliders -->
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <label class="form-label">Opacidade do Cartão</label>
+                    <span id="labelCardOpacity"
+                      style="font-size: 0.75rem; color: var(--accent-primary); font-weight: 700;">75%</span>
+                  </div>
+                  <input type="range" id="rangeCardOpacity" min="0" max="100" value="75"
+                    style="width: 100%; accent-color: var(--accent-primary); cursor: pointer;" />
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <label class="form-label">Efeito Vidro / Blur</label>
+                    <span id="labelCardBlur"
+                      style="font-size: 0.75rem; color: var(--accent-primary); font-weight: 700;">24px</span>
+                  </div>
+                  <input type="range" id="rangeCardBlur" min="0" max="50" value="24"
+                    style="width: 100%; accent-color: var(--accent-primary); cursor: pointer;" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Fonts -->
+            <div class="appearance-card">
+              <div class="form-section-title">
+                <span>🅰️ Font</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label class="form-label">Name Font</label>
+                  <select id="selectNameFont" class="form-select">
+                    <option value="Inter">Inter (Padrão)</option>
+                    <option value="Cinzel">CINZEL (Gothic)</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Outfit">Outfit</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label">Text Font</label>
+                  <select id="selectTextFont" class="form-select">
+                    <option value="Cinzel">CINZEL (Gothic)</option>
+                    <option value="Inter">Inter</option>
+                    <option value="JetBrains Mono">JetBrains Mono</option>
+                    <option value="Outfit">Outfit</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Card: Enhancements -->
+          <div class="appearance-card">
+            <div class="form-section-title">
+              <span>✨ Enhancements</span>
+            </div>
+
+            <!-- Effect Chips -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <label class="form-label" style="margin-bottom: 6px; display: block;">Efeito do Nome (Name
+                  Effect)</label>
+                <div class="chips-group">
+                  <button class="chip-btn name-effect-chip active" data-effect="glow">Glow</button>
+                  <button class="chip-btn name-effect-chip" data-effect="rainbow">Rainbow</button>
+                  <button class="chip-btn name-effect-chip" data-effect="glitch">Glitch</button>
+                  <button class="chip-btn name-effect-chip" data-effect="smoke">Smoke / Blur</button>
+                  <button class="chip-btn name-effect-chip" data-effect="none">Nenhum</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label" style="margin-bottom: 6px; display: block;">Sobreposição de Página (Page
+                  Overlay)</label>
+                <div class="chips-group">
+                  <button class="chip-btn page-overlay-chip active" data-overlay="retro">Retro CRT</button>
+                  <button class="chip-btn page-overlay-chip" data-overlay="vignette">Vignette</button>
+                  <button class="chip-btn page-overlay-chip" data-overlay="noise">Noise</button>
+                  <button class="chip-btn page-overlay-chip" data-overlay="none">Nenhum</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Switches Grid (Idêntico ao print do feds.lol) -->
+            <div class="switches-grid" style="margin-top: 8px;">
+
+              <div class="switch-item">
+                <span class="switch-label">👁️ Animate Views</span>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="switchAnimateViews" checked />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <div class="switch-item">
+                <span class="switch-label">🔄 Tilting Card (3D)</span>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="switchTiltingCard" checked />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <div class="switch-item">
+                <span class="switch-label">💡 Glowing Icons</span>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="switchGlowingIcons" checked />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <div class="switch-item">
+                <span class="switch-label">🎵 Audio Visualizer</span>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="switchAudioVisualizer" checked />
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- TAB 3: LINKS -->
+        <div class="tab-panel" id="tab-links">
+          <div class="form-section">
+            <div class="form-section-title">
+              <span>Links & Redes Sociais</span>
+              <button class="btn btn-primary btn-sm" id="btnOpenAddLinkModal">
+                + Adicionar Link
+              </button>
+            </div>
+
+            <div class="links-list" id="dashboardLinksList">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: BADGES -->
+        <div class="tab-panel" id="tab-badges">
+          <div class="form-section">
+            <div class="form-section-title">
+              <span>Insígnias &amp; Emblemas Oficiais</span>
+              <button class="btn btn-secondary btn-sm" id="btnCreateCustomBadge">
+                + Criar Emblema Personalizado
+              </button>
+            </div>
+            <p class="form-label" style="margin-bottom: 12px;">Clique no botão ou no card para equipar/desequipar
+              qualquer insígnia no seu perfil:</p>
+            <div class="badges-container-grid" id="badgesSelectionGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: TRACKS & AUDIO -->
+        <div class="tab-panel" id="tab-tracks">
+          <div class="form-section">
+            <div class="form-section-title">Música de Fundo & Player</div>
+            <div>
+              <label class="form-label">Título da Música</label>
+              <input type="text" id="inputAudioTitle" class="form-input" placeholder="Ex: NOT FOUND" />
+            </div>
+            <div>
+              <label class="form-label">Artista / Autor</label>
+              <input type="text" id="inputAudioArtist" class="form-input" placeholder="Ex: Math" />
+            </div>
+            <div>
+              <label class="form-label">URL do Áudio (.mp3 / .wav / link direto)</label>
+              <input type="text" id="inputAudioUrl" class="form-input" placeholder="https://exemplo.com/musica.mp3" />
+            </div>
+            <div>
+              <label class="form-label">Capa do Player (URL da imagem)</label>
+              <input type="text" id="inputAudioCover" class="form-input" placeholder="https://exemplo.com/capa.jpg" />
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Live Interactive Split Screen Preview -->
+      <aside class="dashboard-preview-panel">
+        <div class="preview-header">
+          <span class="preview-title">Minimal Profile Preview</span>
+          <button class="btn btn-secondary btn-sm btn-view-profile">Expandir &nearr;</button>
+        </div>
+        <div class="preview-screen-wrapper" id="livePreviewScreen">
+          <!-- Live render dynamically injected here -->
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. PUBLIC PROFILE VIEW (Visualização Cheia)-->
+  <!-- ========================================== -->
+  <div id="viewPublicProfile" style="display: none;">
+    <!-- Top Floating Quick Controls -->
+    <nav class="floating-nav">
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" id="btnBackToDashboard"
+          style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.6);">
+          🔒 Editar Perfil
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-icon" id="btnMuteToggle" title="Mudo / Desmutar Áudio"
+          style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.6);">
+          <svg id="iconUnmuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="iconMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnShareProfile">
+          Compartilhar
+        </button>
+      </div>
+    </nav>
+
+    <!-- Click to Enter Overlay for Autoplay Music -->
+    <div id="clickToEnterOverlay" class="click-overlay">
+      <div class="click-overlay-icon">🎧</div>
+      <div class="click-overlay-text">Clique para entrar no perfil</div>
+    </div>
+
+    <!-- Main Public Profile Container -->
+    <main class="profile-container" id="publicProfileContainer">
+      <!-- Injected by profile.js -->
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Modal: Password Auth / Login Lock -->
+  <div class="modal-overlay" id="modalAuth">
+    <div class="modal-card" style="max-width: 380px; text-align: center;">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">🔐</div>
+      <h3 class="modal-title" style="justify-content: center; margin-bottom: 6px;">
+        Acesso Restrito ao Painel
+      </h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 18px;">
+        Digite a senha mestre para editar as configurações do perfil:
+      </p>
+
+      <input type="password" id="inputAuthPassword" class="form-input" placeholder="Digite sua senha..."
+        style="text-align: center; font-size: 1rem; letter-spacing: 0.2em; margin-bottom: 12px;" />
+
+      <div id="authErrorMessage"
+        style="display: none; color: #ef4444; font-size: 0.8rem; margin-bottom: 12px; font-weight: 600;"></div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" id="btnCloseAuthModal" style="flex: 1;">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" id="btnSubmitAuth" style="flex: 1;">
+          Entrar
+        </button>
+      </div>
+      <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 14px;">
+        (Senha padrão inicial: <code style="color: var(--accent-primary);">achou que ia ser facil?</code>)
+      </p>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Modal: Discord Animated Decorations -->
+  <div class="modal-overlay" id="modalDecorations">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>✨ Molduras Animadas do Discord</span>
+        </h3>
+        <button class="modal-close" id="btnCloseDecoModal">&times;</button>
+      </div>
+
+      <!-- Custom Discord Decoration Input from avatardecoration.com -->
+      <div
+        style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
+        <label class="form-label"
+          style="display: block; margin-bottom: 6px; color: var(--text-primary); font-weight: 600;">
+          🌐 Colar Moldura do Discord / avatardecoration.com:
+        </label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="inputCustomDecoUrl" class="form-input"
+            placeholder="Cole o link da imagem (.png, .gif, .apng)..." />
+          <button class="btn btn-primary btn-sm" id="btnApplyCustomDeco" style="white-space: nowrap;">
+            Aplicar
+          </button>
+        </div>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+          Dica: No <strong>avatardecoration.com</strong>, clique com o botão direito na moldura desejada &gt; "Copiar
+          endereço da imagem" e cole acima.
+        </p>
+      </div>
+
+      <!-- Search input for decorations -->
+      <input type="text" id="inputSearchDeco" class="form-input platform-search-input"
+        placeholder="🔍 Buscar moldura (Kitsune, Arcane, Valorant, Sakura, Phoenix, Spongebob...)" />
+
+      <div class="decorations-grid" id="decorationsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Social Link -->
+  <div class="modal-overlay" id="modalAddLink">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>🔗 Adicionar Link Social</span>
+        </h3>
+        <button class="modal-close" id="btnCloseAddLinkModal">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label class="form-label" style="margin-bottom: 4px; display: block;">1. Selecione a Plataforma:</label>
+        <input type="text" id="searchPlatformInput" class="form-input platform-search-input"
+          placeholder="Buscar plataforma (Instagram, Discord, Steam, Spotify...)" />
+        <div class="platform-grid" id="platformsGrid">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div id="newLinkForm" style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px;">
+        <div style="margin-bottom: 8px; font-size: 0.8rem; color: var(--text-muted);">
+          Plataforma Selecionada: <strong id="selectedPlatformBadge"
+            style="color: var(--accent-primary);">Instagram</strong>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label class="form-label">Título / Rótulo</label>
+          <input type="text" id="inputNewLinkTitle" class="form-input" placeholder="Ex: Instagram" />
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="form-label">URL / Nome de Usuário</label>
+          <input type="text" id="inputNewLinkUrl" class="form-input" placeholder="https://instagram.com/seunome" />
+        </div>
+
+        <button class="btn btn-primary" id="btnConfirmAddLink" style="width: 100%;">
+          Salvar e Adicionar Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
