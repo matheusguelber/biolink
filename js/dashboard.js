@@ -2,10 +2,10 @@
  * Dashboard Controller & Live Editor Logic
  */
 
-import { stateManager } from './state.js';
-import { AVATAR_DECORATIONS, getDecorationById } from './decorations.js';
-import { SOCIAL_PLATFORMS, getPlatformById } from './platforms.js';
-import { profileRenderer } from './profile.js';
+import { stateManager } from './state.js?v=2.0.1';
+import { AVATAR_DECORATIONS, getDecorationById } from './decorations.js?v=2.0.1';
+import { SOCIAL_PLATFORMS, getPlatformById } from './platforms.js?v=2.0.1';
+import { profileRenderer } from './profile.js?v=2.0.1';
 
 export class DashboardController {
   constructor() {

@@ -2,9 +2,9 @@
  * Main Application Router, Security Lock & Entry Point
  */
 
-import { stateManager } from './state.js';
-import { profileRenderer } from './profile.js';
-import { DashboardController } from './dashboard.js';
+import { stateManager } from './state.js?v=2.0.1';
+import { profileRenderer } from './profile.js?v=2.0.1';
+import { DashboardController } from './dashboard.js?v=2.0.1';
 
 class App {
   constructor() {
