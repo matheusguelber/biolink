@@ -90,7 +90,7 @@ class ProfileRenderer {
     const linksHtml = activeLinks.map(link => {
       const platform = getPlatformById(link.platform);
       return `
-        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="social-link-btn" title="${link.title || platform.name}">
+        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="social-link-btn" data-link-id="${link.id}" title="${link.title || platform.name}">
           ${platform.icon}
         </a>
       `;
@@ -197,6 +197,37 @@ class ProfileRenderer {
     // Attach Audio Playback Events if in full mode
     if (!isPreview && audio && audio.enabled && audio.audioUrl) {
       this.setupAudioListeners(audio.audioUrl);
+    }
+
+    // [FEATURE 3 & 5]: Real Views and Link Click Analytics (Only for public visitors, not preview)
+    if (!isPreview) {
+      // 1. Real Views increment
+      if (!sessionStorage.getItem('biolink_view_sent')) {
+        sessionStorage.setItem('biolink_view_sent', '1');
+        fetch('/api/view', { method: 'POST' })
+          .then(r => r.json())
+          .then(data => {
+            if (data && data.success && data.views !== undefined) {
+              const badgeSpan = containerElement.querySelector('.views-badge span');
+              if (badgeSpan) badgeSpan.textContent = data.views;
+            }
+          })
+          .catch(() => {});
+      }
+
+      // 2. Link Clicks Tracker
+      containerElement.querySelectorAll('.social-link-btn[data-link-id]').forEach(btn => {
+        btn.onclick = () => {
+          const linkId = btn.dataset.linkId;
+          if (linkId) {
+            fetch('/api/link-click', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ linkId })
+            }).catch(() => {});
+          }
+        };
+      });
     }
   }
 

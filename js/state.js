@@ -210,11 +210,13 @@ class StateManager {
 
   async syncToServer() {
     this.setCloudStatus('syncing', 'Salvando no Firebase...');
+    const adminPassword = localStorage.getItem('biolink_admin_password') || 'math123';
     try {
       const res = await fetch('/api/profile', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-admin-password': adminPassword
         },
         body: JSON.stringify(this.state)
       });

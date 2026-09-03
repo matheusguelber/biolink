@@ -684,7 +684,9 @@ export class DashboardController {
   renderLinksList() {
     const listEl = document.getElementById('dashboardLinksList');
     if (!listEl) return;
-    const links = stateManager.getState().links || [];
+    const state = stateManager.getState();
+    const links = state.links || [];
+    const linkClicks = state.linkClicks || {};
 
     if (links.length === 0) {
       listEl.innerHTML = `
@@ -697,6 +699,7 @@ export class DashboardController {
 
     listEl.innerHTML = links.map(link => {
       const platform = getPlatformById(link.platform);
+      const clicks = linkClicks[link.id] || 0;
       return `
         <div class="link-item-row" data-id="${link.id}">
           <div class="link-item-left">
@@ -709,7 +712,8 @@ export class DashboardController {
               <span class="link-item-url">${link.url}</span>
             </div>
           </div>
-          <div class="link-item-actions">
+          <div class="link-item-actions" style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 0.72rem; padding: 4px 8px; border-radius: 12px; font-weight: 600;" title="Total de cliques">${clicks} cliques</span>
             <button class="btn btn-danger btn-sm delete-link-btn" data-id="${link.id}">Remover</button>
           </div>
         </div>

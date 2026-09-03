@@ -6,12 +6,14 @@ const admin = require('firebase-admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'math123';
 
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 
 // Initial default state fallback
 const LOCAL_BACKUP_PATH = path.join(__dirname, 'profile.json');
+const INDEX_HTML_PATH = path.join(__dirname, 'index.html');
 
 // Initialize Firebase Admin
 let db = null;
@@ -88,6 +90,14 @@ async function saveProfileToSource(data) {
   return { savedToFirebase };
 }
 
+// No-cache middleware for HTML and JS
+app.use((req, res, next) => {
+  if (req.path.endsWith('.js') || req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  }
+  next();
+});
+
 // API Routes
 app.get('/api/health', (req, res) => {
   res.json({
@@ -110,8 +120,14 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
+// [FEATURE 2]: Password Protected Profile Save
 app.post('/api/profile', async (req, res) => {
   try {
+    const authHeader = req.headers['x-admin-password'] || (req.body && req.body.adminPassword);
+    if (authHeader !== ADMIN_PASSWORD) {
+      return res.status(401).json({ success: false, error: 'Acesso não autorizado. Senha mestre incorreta.' });
+    }
+
     const payload = req.body;
     if (!payload || !payload.profile) {
       return res.status(400).json({ success: false, error: 'Dados de perfil inválidos.' });
@@ -131,12 +147,105 @@ app.post('/api/profile', async (req, res) => {
   }
 });
 
-// Serve static frontend files
-app.use(express.static(__dirname));
+// [FEATURE 3]: Real Views Increment
+app.post('/api/view', async (req, res) => {
+  try {
+    let currentViews = 1;
+    if (firebaseInitialized && db) {
+      const docRef = db.collection('biolink_data').doc('profile_main');
+      await docRef.set({
+        profile: {
+          views: admin.firestore.FieldValue.increment(1)
+        }
+      }, { merge: true });
+      const snap = await docRef.get();
+      currentViews = (snap.exists && snap.data()?.profile?.views) || 1;
+    } else {
+      // Local fallback
+      const data = await getProfileFromSource() || {};
+      data.profile = data.profile || {};
+      data.profile.views = (data.profile.views || 0) + 1;
+      currentViews = data.profile.views;
+      await saveProfileToSource(data);
+    }
+    return res.json({ success: true, views: currentViews });
+  } catch (err) {
+    console.error('API /api/view error:', err.message);
+    res.json({ success: false, error: err.message });
+  }
+});
 
-// Route all frontend routes to index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// [FEATURE 5]: Link Click Tracker
+app.post('/api/link-click', async (req, res) => {
+  try {
+    const { linkId } = req.body || {};
+    if (!linkId) return res.status(400).json({ success: false, error: 'linkId ausente' });
+
+    let clickCount = 1;
+    if (firebaseInitialized && db) {
+      const docRef = db.collection('biolink_data').doc('profile_main');
+      await docRef.set({
+        linkClicks: {
+          [linkId]: admin.firestore.FieldValue.increment(1)
+        }
+      }, { merge: true });
+      const snap = await docRef.get();
+      clickCount = snap.data()?.linkClicks?.[linkId] || 1;
+    } else {
+      const data = await getProfileFromSource() || {};
+      data.linkClicks = data.linkClicks || {};
+      data.linkClicks[linkId] = (data.linkClicks[linkId] || 0) + 1;
+      clickCount = data.linkClicks[linkId];
+      await saveProfileToSource(data);
+    }
+
+    return res.json({ success: true, linkId, clicks: clickCount });
+  } catch (err) {
+    console.error('API /api/link-click error:', err.message);
+    res.json({ success: false, error: err.message });
+  }
+});
+
+// Serve static frontend files
+app.use(express.static(__dirname, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.json')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    }
+  }
+}));
+
+// [FEATURE 4]: Discord / WhatsApp / Social Crawler OpenGraph Dynamic Injection
+app.get('*', async (req, res) => {
+  const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+  const isCrawler = /bot|crawl|spider|facebookexternalhit|whatsapp|discordbot|slackbot|twitterbot|telegrambot/i.test(userAgent);
+
+  if (isCrawler && fs.existsSync(INDEX_HTML_PATH)) {
+    try {
+      const profileData = await getProfileFromSource();
+      let html = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
+
+      if (profileData && profileData.profile) {
+        const title = `${profileData.profile.displayName || 'Math'} &bull; BioLink`;
+        const desc = profileData.profile.bio || 'Visite meu perfil oficial, links e redes sociais.';
+        const img = profileData.profile.avatarUrl || 'https://servidormatheus.com/favicon.ico';
+        const color = profileData.appearance?.themeColor || '#ef4444';
+
+        html = html
+          .replace(/<title>.*?<\/title>/i, `<title>${title}</title>`)
+          .replace(/<meta property="og:title" content=".*?" \/>/i, `<meta property="og:title" content="${title}" />`)
+          .replace(/<meta property="og:description" content=".*?" \/>/i, `<meta property="og:description" content="${desc}" />`)
+          .replace(/<meta property="og:image" content=".*?" \/>/i, `<meta property="og:image" content="${img}" />`)
+          .replace(/<meta name="theme-color" content=".*?" \/>/i, `<meta name="theme-color" content="${color}" />`);
+      }
+
+      return res.send(html);
+    } catch (e) {
+      console.error('Erro ao injetar meta tags para bot:', e);
+    }
+  }
+
+  res.sendFile(INDEX_HTML_PATH);
 });
 
 // Start Server
