@@ -101,7 +101,10 @@ export class DashboardController {
   collectFormDataToState() {
     const getVal = (id, fallback = '') => {
       const el = document.getElementById(id);
-      return (el && el.value !== undefined) ? el.value : fallback;
+      if (!el || el.value === undefined) return fallback;
+      const v = el.value.trim();
+      if (v.startsWith('⏳')) return fallback; // Don't save temporary upload text
+      return v;
     };
     const getCheck = (id, fallback = false) => {
       const el = document.getElementById(id);
@@ -283,6 +286,9 @@ export class DashboardController {
     });
 
     this.bindFileUpload('fileBgMediaInput', 'inputBgMediaUrl', (url) => {
+      const isVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.startsWith('data:video');
+      stateManager.updateProfileField('bgType', 'media');
+      stateManager.updateProfileField('bgMediaType', isVideo ? 'video' : 'image');
       stateManager.updateProfileField('bgMediaUrl', url);
     });
 
@@ -458,7 +464,7 @@ export class DashboardController {
     const el = document.getElementById(elementId);
     if (el) {
       el.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
 
         const targetInput = document.getElementById(targetInputId);
@@ -507,6 +513,9 @@ export class DashboardController {
           console.error('Erro na leitura do arquivo:', err);
           if (targetInput) targetInput.value = originalVal;
           alert('Erro ao carregar arquivo local: ' + err.message);
+        } finally {
+          // Reset file input value so user can pick same file again
+          e.target.value = '';
         }
       });
     }
