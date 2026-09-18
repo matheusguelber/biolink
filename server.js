@@ -42,6 +42,10 @@ async function downloadAndCacheUrl(externalUrl, prefix = 'media') {
   if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
     return externalUrl;
   }
+  // Ignore Spotify links (Spotify uses embedded player instead of raw audio files)
+  if (trimmed.includes('spotify.com') || trimmed.includes('spotify.link')) {
+    return externalUrl;
+  }
   // Ignore if already hosted locally
   if (trimmed.includes('/uploads/') || trimmed.startsWith('/uploads/')) {
     return externalUrl;

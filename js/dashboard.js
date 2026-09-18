@@ -273,7 +273,27 @@ export class DashboardController {
     // Audio input bindings
     this.bindInput('inputAudioTitle', (val) => stateManager.updateAudioField('title', val));
     this.bindInput('inputAudioArtist', (val) => stateManager.updateAudioField('artist', val));
-    this.bindInput('inputAudioUrl', (val) => stateManager.updateAudioField('audioUrl', val));
+    this.bindInput('inputAudioUrl', async (val) => {
+      stateManager.updateAudioField('audioUrl', val);
+      if (val && (val.includes('spotify.com/track') || val.includes('spotify.link'))) {
+        try {
+          const oembedRes = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(val)}`);
+          if (oembedRes.ok) {
+            const trackData = await oembedRes.json();
+            if (trackData && trackData.title) {
+              stateManager.updateAudioField('title', trackData.title);
+              this.setInputValue('inputAudioTitle', trackData.title);
+              if (trackData.thumbnail_url) {
+                stateManager.updateAudioField('coverArt', trackData.thumbnail_url);
+                this.setInputValue('inputAudioCover', trackData.thumbnail_url);
+              }
+            }
+          }
+        } catch (e) {
+          console.log('Spotify oEmbed lookup:', e);
+        }
+      }
+    });
     this.bindInput('inputAudioCover', (val) => stateManager.updateAudioField('coverArt', val));
 
     // File upload bindings

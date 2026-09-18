@@ -117,25 +117,51 @@ class ProfileRenderer {
       </div>
     ` : '';
 
+    // Check if Audio is a Spotify URL (track, playlist, or album)
+    const isSpotify = audio && audio.enabled && audio.audioUrl && (audio.audioUrl.includes('spotify.com') || audio.audioUrl.includes('spotify.link'));
+    let spotifyEmbedUrl = '';
+    if (isSpotify) {
+      const trackMatch = audio.audioUrl.match(/track[\/:]([a-zA-Z0-9]+)/);
+      const playlistMatch = audio.audioUrl.match(/playlist[\/:]([a-zA-Z0-9]+)/);
+      const albumMatch = audio.audioUrl.match(/album[\/:]([a-zA-Z0-9]+)/);
+      
+      if (trackMatch) {
+        spotifyEmbedUrl = `https://open.spotify.com/embed/track/${trackMatch[1]}?utm_source=generator&theme=0`;
+      } else if (playlistMatch) {
+        spotifyEmbedUrl = `https://open.spotify.com/embed/playlist/${playlistMatch[1]}?utm_source=generator&theme=0`;
+      } else if (albumMatch) {
+        spotifyEmbedUrl = `https://open.spotify.com/embed/album/${albumMatch[1]}?utm_source=generator&theme=0`;
+      }
+    }
+
     // Build Audio Widget HTML
-    const audioWidgetHtml = (audio && audio.enabled && audio.title) ? `
-      <div class="profile-audio-widget">
-        <div class="audio-cover-art">
-          <img src="${audio.coverArt || profile.avatarUrl}" alt="Cover Art" />
+    let audioWidgetHtml = '';
+    if (isSpotify && spotifyEmbedUrl) {
+      audioWidgetHtml = `
+        <div class="profile-spotify-widget" style="width: 100%; max-width: 360px; margin: 12px auto 0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.08); background: #121212;">
+          <iframe style="border-radius:12px; display: block;" src="${spotifyEmbedUrl}" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
         </div>
-        <div class="audio-info">
-          <div class="audio-track-title">${audio.title}</div>
-          <div class="audio-artist-name">${audio.artist || profile.displayName}</div>
+      `;
+    } else if (audio && audio.enabled && audio.title) {
+      audioWidgetHtml = `
+        <div class="profile-audio-widget">
+          <div class="audio-cover-art">
+            <img src="${audio.coverArt || profile.avatarUrl}" alt="Cover Art" />
+          </div>
+          <div class="audio-info">
+            <div class="audio-track-title">${audio.title}</div>
+            <div class="audio-artist-name">${audio.artist || profile.displayName}</div>
+          </div>
+          ${visualizerHtml}
+          <div class="audio-controls">
+            <button class="audio-play-btn" id="audioToggleBtn" title="Play / Pause Audio">
+              <svg id="audioIconPlay" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="audioIconPause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          </div>
         </div>
-        ${visualizerHtml}
-        <div class="audio-controls">
-          <button class="audio-play-btn" id="audioToggleBtn" title="Play / Pause Audio">
-            <svg id="audioIconPlay" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="audioIconPause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-          </button>
-        </div>
-      </div>
-    ` : '';
+      `;
+    }
 
     containerElement.innerHTML = `
       ${overlayClass ? `<div class="${overlayClass}"></div>` : ''}
@@ -205,8 +231,8 @@ class ProfileRenderer {
       containerElement.style.cursor = 'default';
     }
 
-    // Attach Audio Playback Events if in full mode
-    if (!isPreview && audio && audio.enabled && audio.audioUrl) {
+    // Attach Audio Playback Events if in full mode (only for direct audio files, not Spotify embeds)
+    if (!isPreview && audio && audio.enabled && audio.audioUrl && !isSpotify) {
       this.setupAudioListeners(audio.audioUrl);
     }
 
