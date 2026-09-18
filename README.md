@@ -68,8 +68,3 @@ sudo certbot --nginx -d seudominio.com -d www.seudominio.com
 
 ---
 
-## 🔐 Acesso e Senha do Painel
-
-- **Rota do Perfil Público**: `https://seudominio.com/` ou `https://seudominio.com/#math`
-- **Rota do Dashboard**: `https://seudominio.com/#dashboard`
-- **Senha Padrão Inicial**: `math123`
