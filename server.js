@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
+const { URL } = require('url');
 const admin = require('firebase-admin');
 
 const app = express();
@@ -31,6 +34,129 @@ app.use('/uploads', express.static(UPLOADS_DIR, {
     res.setHeader('Cache-Control', 'public, max-age=86400');
   }
 }));
+
+// Helper to download any external URL (Discord, Imgur, Pinterest, etc) and cache locally in /uploads/
+async function downloadAndCacheUrl(externalUrl, prefix = 'media') {
+  if (!externalUrl || typeof externalUrl !== 'string') return externalUrl;
+  const trimmed = externalUrl.trim();
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    return externalUrl;
+  }
+  // Ignore if already hosted locally
+  if (trimmed.includes('/uploads/') || trimmed.startsWith('/uploads/')) {
+    return externalUrl;
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const parsedUrl = new URL(trimmed);
+      const client = parsedUrl.protocol === 'https:' ? https : http;
+
+      const req = client.get(trimmed, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*'
+        }
+      }, (res) => {
+        // Handle redirects (301, 302, 307, 308)
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return downloadAndCacheUrl(res.headers.location, prefix).then(resolve);
+        }
+
+        if (res.statusCode !== 200) {
+          console.warn(`⚠️ Não foi possível baixar URL externa (${res.statusCode}):`, trimmed);
+          return resolve(externalUrl);
+        }
+
+        const contentType = res.headers['content-type'] || '';
+        const mimeExtMap = {
+          'image/gif': '.gif',
+          'image/png': '.png',
+          'image/jpeg': '.jpg',
+          'image/webp': '.webp',
+          'image/svg+xml': '.svg',
+          'video/mp4': '.mp4',
+          'video/webm': '.webm',
+          'audio/mpeg': '.mp3',
+          'audio/mp3': '.mp3',
+          'audio/wav': '.wav',
+          'audio/ogg': '.ogg'
+        };
+
+        let ext = '';
+        for (const mime in mimeExtMap) {
+          if (contentType.includes(mime)) {
+            ext = mimeExtMap[mime];
+            break;
+          }
+        }
+
+        if (!ext) {
+          const pathname = parsedUrl.pathname;
+          ext = path.extname(pathname) || '.gif';
+        }
+
+        const safePrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const filename = `${safePrefix}_${Date.now()}${ext}`;
+        const destPath = path.join(UPLOADS_DIR, filename);
+
+        const chunks = [];
+        res.on('data', chunk => chunks.push(chunk));
+        res.on('end', () => {
+          try {
+            const buffer = Buffer.concat(chunks);
+            fs.writeFileSync(destPath, buffer);
+            console.log(`💾 Link externo baixado e salvo localmente: ${trimmed.substring(0, 50)}... -> /uploads/${filename} (${(buffer.length / 1024).toFixed(1)} KB)`);
+            resolve(`/uploads/${filename}`);
+          } catch (writeErr) {
+            console.error('Erro ao gravar arquivo baixado:', writeErr);
+            resolve(externalUrl);
+          }
+        });
+      });
+
+      req.on('error', (err) => {
+        console.warn('Erro ao conectar na URL para download:', err.message);
+        resolve(externalUrl);
+      });
+
+      req.setTimeout(15000, () => {
+        req.destroy();
+        resolve(externalUrl);
+      });
+    } catch (e) {
+      console.warn('URL inválida para download:', e.message);
+      resolve(externalUrl);
+    }
+  });
+}
+
+// Download and cache all external links in the profile payload
+async function downloadAndCacheAllFields(data) {
+  if (!data || !data.profile) return data;
+  const clone = JSON.parse(JSON.stringify(data));
+
+  if (clone.profile.avatarUrl) {
+    clone.profile.avatarUrl = await downloadAndCacheUrl(clone.profile.avatarUrl, 'avatar');
+  }
+  if (clone.profile.bgMediaUrl) {
+    clone.profile.bgMediaUrl = await downloadAndCacheUrl(clone.profile.bgMediaUrl, 'background');
+  }
+  if (clone.profile.bannerUrl) {
+    clone.profile.bannerUrl = await downloadAndCacheUrl(clone.profile.bannerUrl, 'banner');
+  }
+  if (clone.profile.customDecoUrl) {
+    clone.profile.customDecoUrl = await downloadAndCacheUrl(clone.profile.customDecoUrl, 'deco');
+  }
+  if (clone.audio && clone.audio.audioUrl) {
+    clone.audio.audioUrl = await downloadAndCacheUrl(clone.audio.audioUrl, 'audio');
+  }
+  if (clone.audio && clone.audio.coverArt) {
+    clone.audio.coverArt = await downloadAndCacheUrl(clone.audio.coverArt, 'audiocover');
+  }
+
+  return clone;
+}
 
 // Helper to extract base64 strings and save to files to prevent Firestore 1MB limits
 function sanitizePayloadAndExtractBase64(data) {
@@ -127,7 +253,10 @@ async function getProfileFromSource() {
 // Helper to save profile data
 async function saveProfileToSource(data) {
   let savedToFirebase = false;
-  const processedData = sanitizePayloadAndExtractBase64(data);
+  // 1. Convert any base64
+  let processedData = sanitizePayloadAndExtractBase64(data);
+  // 2. Download and permanently cache external URLs (Discord, etc) to /uploads/
+  processedData = await downloadAndCacheAllFields(processedData);
 
   if (firebaseInitialized && db) {
     try {
@@ -167,6 +296,24 @@ app.get('/api/health', (req, res) => {
     firebase: firebaseInitialized,
     timestamp: new Date().toISOString()
   });
+});
+
+// [FEATURE]: Cache External URL to Local Uploads (Never lose expired Discord/external links!)
+app.post('/api/cache-url', async (req, res) => {
+  try {
+    const { url, field } = req.body || {};
+    if (!url) return res.status(400).json({ success: false, error: 'URL ausente' });
+
+    const localUrl = await downloadAndCacheUrl(url, field || 'media');
+    return res.json({
+      success: true,
+      originalUrl: url,
+      localUrl: localUrl
+    });
+  } catch (err) {
+    console.error('API /api/cache-url error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // [FEATURE]: File Upload Endpoint (PC local file -> /uploads/...)
