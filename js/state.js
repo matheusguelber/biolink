@@ -224,6 +224,13 @@ class StateManager {
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
+          if (data.data) {
+            this.state = this.mergeWithDefaults(data.data);
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+            } catch (e) {}
+            this.notify();
+          }
           const msg = data.savedToFirebase ? 'Salvo no Firebase Cloud ✅' : 'Salvo no Servidor ✅';
           this.setCloudStatus('synced', msg);
           setTimeout(() => {
@@ -232,10 +239,13 @@ class StateManager {
             }
           }, 4000);
           return { success: true, message: msg };
+        } else {
+          this.setCloudStatus('error', data.error || 'Erro ao salvar no servidor');
+          return { success: false, message: data.error || 'Erro na resposta do servidor' };
         }
       }
       this.setCloudStatus('error', 'Erro ao salvar no servidor');
-      return { success: false, message: 'Erro na resposta do servidor' };
+      return { success: false, message: `Erro HTTP ${res.status}` };
     } catch (e) {
       console.warn('Falha na requisição para salvar no servidor:', e.message);
       this.setCloudStatus('offline', 'Salvo localmente (offline)');

@@ -524,17 +524,29 @@
               <label class="form-label">Título da Música</label>
               <input type="text" id="inputAudioTitle" class="form-input" placeholder="Ex: NOT FOUND" />
             </div>
-            <div>
+            <div style="margin-top: 10px;">
               <label class="form-label">Artista / Autor</label>
               <input type="text" id="inputAudioArtist" class="form-input" placeholder="Ex: Math" />
             </div>
-            <div>
+            <div style="margin-top: 10px;">
               <label class="form-label">URL do Áudio (.mp3 / .wav / link direto)</label>
-              <input type="text" id="inputAudioUrl" class="form-input" placeholder="https://exemplo.com/musica.mp3" />
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="inputAudioUrl" class="form-input" placeholder="https://exemplo.com/musica.mp3" />
+                <label class="btn btn-secondary btn-sm" style="white-space: nowrap; cursor: pointer;">
+                  📁 Upload
+                  <input type="file" id="fileAudioInput" accept="audio/*" style="display: none;" />
+                </label>
+              </div>
             </div>
-            <div>
+            <div style="margin-top: 10px;">
               <label class="form-label">Capa do Player (URL da imagem)</label>
-              <input type="text" id="inputAudioCover" class="form-input" placeholder="https://exemplo.com/capa.jpg" />
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="inputAudioCover" class="form-input" placeholder="https://exemplo.com/capa.jpg" />
+                <label class="btn btn-secondary btn-sm" style="white-space: nowrap; cursor: pointer;">
+                  📁 Upload
+                  <input type="file" id="fileAudioCoverInput" accept="image/*" style="display: none;" />
+                </label>
+              </div>
             </div>
           </div>
         </div>

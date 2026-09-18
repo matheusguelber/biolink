@@ -274,19 +274,24 @@ export class DashboardController {
     this.bindInput('inputAudioCover', (val) => stateManager.updateAudioField('coverArt', val));
 
     // File upload bindings
-    this.bindFileUpload('fileAvatarInput', (dataUrl) => {
-      stateManager.updateProfileField('avatarUrl', dataUrl);
-      this.setInputValue('inputAvatarUrl', dataUrl);
+    this.bindFileUpload('fileAvatarInput', 'inputAvatarUrl', (url) => {
+      stateManager.updateProfileField('avatarUrl', url);
     });
 
-    this.bindFileUpload('fileBannerInput', (dataUrl) => {
-      stateManager.updateProfileField('bannerUrl', dataUrl);
-      this.setInputValue('inputBannerUrl', dataUrl);
+    this.bindFileUpload('fileBannerInput', 'inputBannerUrl', (url) => {
+      stateManager.updateProfileField('bannerUrl', url);
     });
 
-    this.bindFileUpload('fileBgMediaInput', (dataUrl) => {
-      stateManager.updateProfileField('bgMediaUrl', dataUrl);
-      this.setInputValue('inputBgMediaUrl', dataUrl);
+    this.bindFileUpload('fileBgMediaInput', 'inputBgMediaUrl', (url) => {
+      stateManager.updateProfileField('bgMediaUrl', url);
+    });
+
+    this.bindFileUpload('fileAudioInput', 'inputAudioUrl', (url) => {
+      stateManager.updateAudioField('audioUrl', url);
+    });
+
+    this.bindFileUpload('fileAudioCoverInput', 'inputAudioCover', (url) => {
+      stateManager.updateAudioField('coverArt', url);
     });
 
     // Avatar Shape buttons
@@ -449,15 +454,59 @@ export class DashboardController {
     }
   }
 
-  bindFileUpload(elementId, callback) {
+  bindFileUpload(elementId, targetInputId, callback) {
     const el = document.getElementById(elementId);
     if (el) {
-      el.addEventListener('change', (e) => {
+      el.addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (!file) return;
+
+        const targetInput = document.getElementById(targetInputId);
+        const originalVal = targetInput ? targetInput.value : '';
+
+        // Temporary visual indication
+        if (targetInput) targetInput.value = '⏳ Enviando arquivo ao servidor...';
+
+        try {
           const reader = new FileReader();
-          reader.onload = (event) => callback(event.target.result);
+          reader.onload = async (event) => {
+            const base64Data = event.target.result;
+            
+            // Show instant local preview right away
+            callback(base64Data);
+
+            try {
+              // Upload to server endpoint to save permanently as static file
+              const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  filename: file.name,
+                  data: base64Data
+                })
+              });
+
+              if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.url) {
+                  // Replace base64 with clean static URL
+                  if (targetInput) targetInput.value = json.url;
+                  callback(json.url);
+                  return;
+                }
+              }
+            } catch (errUpload) {
+              console.warn('Servidor de upload não respondeu, mantendo fallback local:', errUpload);
+            }
+
+            // If upload API is not reachable, keep dataUrl
+            if (targetInput) targetInput.value = base64Data;
+          };
           reader.readAsDataURL(file);
+        } catch (err) {
+          console.error('Erro na leitura do arquivo:', err);
+          if (targetInput) targetInput.value = originalVal;
+          alert('Erro ao carregar arquivo local: ' + err.message);
         }
       });
     }

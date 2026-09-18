@@ -9,11 +9,72 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'math123';
 
 app.use(cors());
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Initial default state fallback
 const LOCAL_BACKUP_PATH = path.join(__dirname, 'profile.json');
 const INDEX_HTML_PATH = path.join(__dirname, 'index.html');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  try {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  } catch (e) {
+    console.error('Erro ao criar pasta uploads:', e.message);
+  }
+}
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(UPLOADS_DIR, {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+}));
+
+// Helper to extract base64 strings and save to files to prevent Firestore 1MB limits
+function sanitizePayloadAndExtractBase64(data) {
+  if (!data) return data;
+  const clone = JSON.parse(JSON.stringify(data));
+
+  function processObj(obj) {
+    for (const key in obj) {
+      if (typeof obj[key] === 'string' && obj[key].startsWith('data:')) {
+        const matches = obj[key].match(/^data:([A-Za-z0-9-+/]+);base64,(.+)$/);
+        if (matches && matches.length === 3) {
+          const mimeType = matches[1];
+          const base64Data = matches[2];
+          try {
+            const buffer = Buffer.from(base64Data, 'base64');
+            const mimeExtMap = {
+              'image/jpeg': '.jpg',
+              'image/png': '.png',
+              'image/gif': '.gif',
+              'image/webp': '.webp',
+              'video/mp4': '.mp4',
+              'video/webm': '.webm',
+              'audio/mpeg': '.mp3',
+              'audio/mp3': '.mp3',
+              'audio/wav': '.wav'
+            };
+            const ext = mimeExtMap[mimeType] || '.png';
+            const fileName = `auto_${key}_${Date.now()}${ext}`;
+            fs.writeFileSync(path.join(UPLOADS_DIR, fileName), buffer);
+            obj[key] = `/uploads/${fileName}`;
+            console.log(`📁 Auto-convertido base64 de ${key} para /uploads/${fileName} (${(buffer.length / 1024).toFixed(1)} KB)`);
+          } catch (err) {
+            console.error(`Erro ao extrair base64 de ${key}:`, err.message);
+          }
+        }
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        processObj(obj[key]);
+      }
+    }
+  }
+
+  processObj(clone);
+  return clone;
+}
 
 // Initialize Firebase Admin
 let db = null;
@@ -66,12 +127,13 @@ async function getProfileFromSource() {
 // Helper to save profile data
 async function saveProfileToSource(data) {
   let savedToFirebase = false;
+  const processedData = sanitizePayloadAndExtractBase64(data);
 
   if (firebaseInitialized && db) {
     try {
       const docRef = db.collection('biolink_data').doc('profile_main');
       await docRef.set({
-        ...data,
+        ...processedData,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
       savedToFirebase = true;
@@ -82,12 +144,12 @@ async function saveProfileToSource(data) {
 
   // Also save locally as backup
   try {
-    fs.writeFileSync(LOCAL_BACKUP_PATH, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(LOCAL_BACKUP_PATH, JSON.stringify(processedData, null, 2), 'utf8');
   } catch (e) {
     console.error('Erro ao salvar profile.json backup:', e.message);
   }
 
-  return { savedToFirebase };
+  return { savedToFirebase, data: processedData };
 }
 
 // No-cache middleware for HTML and JS
@@ -105,6 +167,65 @@ app.get('/api/health', (req, res) => {
     firebase: firebaseInitialized,
     timestamp: new Date().toISOString()
   });
+});
+
+// [FEATURE]: File Upload Endpoint (PC local file -> /uploads/...)
+app.post('/api/upload', (req, res) => {
+  try {
+    const { data, filename } = req.body || {};
+    if (!data) {
+      return res.status(400).json({ success: false, error: 'Nenhum dado de arquivo enviado.' });
+    }
+
+    const matches = data.match(/^data:([A-Za-z0-9-+/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ success: false, error: 'Formato de base64 inválido.' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Extension deduction
+    const mimeExtMap = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+      'image/svg+xml': '.svg',
+      'video/mp4': '.mp4',
+      'video/webm': '.webm',
+      'audio/mpeg': '.mp3',
+      'audio/mp3': '.mp3',
+      'audio/wav': '.wav',
+      'audio/ogg': '.ogg'
+    };
+
+    let ext = mimeExtMap[mimeType];
+    if (!ext && filename && path.extname(filename)) {
+      ext = path.extname(filename);
+    }
+    if (!ext) ext = '.png';
+
+    const safeBaseName = filename 
+      ? path.basename(filename, path.extname(filename)).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30)
+      : 'upload';
+    
+    const uniqueFileName = `${safeBaseName}_${Date.now()}${ext}`;
+    const filePath = path.join(UPLOADS_DIR, uniqueFileName);
+
+    fs.writeFileSync(filePath, buffer);
+    console.log(`📁 Upload concluído: ${uniqueFileName} (${(buffer.length / 1024).toFixed(1)} KB)`);
+
+    return res.json({
+      success: true,
+      url: `/uploads/${uniqueFileName}`,
+      filename: uniqueFileName
+    });
+  } catch (err) {
+    console.error('API /api/upload error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.get('/api/profile', async (req, res) => {
@@ -139,6 +260,7 @@ app.post('/api/profile', async (req, res) => {
     return res.json({
       success: true,
       savedToFirebase: result.savedToFirebase,
+      data: result.data,
       message: result.savedToFirebase ? 'Salvo no Firebase Cloud com sucesso!' : 'Salvo localmente com sucesso!'
     });
   } catch (err) {
